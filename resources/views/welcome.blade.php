@@ -77,7 +77,7 @@
                     Sistem Cuti Terintegrasi V1.0
                 </div>
 
-                <h1 class="text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-6">
+                <h1 class="text-4xl lg:text-7xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-6">
                     Manajemen Cuti <br>
                     <span class="relative whitespace-nowrap text-primary-600 dark:text-primary-500">
                         <svg aria-hidden="true" viewBox="0 0 418 42" class="absolute top-2/3 left-0 h-[0.58em] w-full fill-primary-200/50 dark:fill-primary-800/50" preserveAspectRatio="none"><path d="M203.371.916c-26.013-2.078-76.686 1.963-124.73 9.946L67.3 12.749C46.169 14.687 14.666 17.518 4.8 22.426c-8.865 4.395-9.723 12.33 4.291 16.433 13.923 4.093 39.462 2.766 52.613 2.162 43.14-1.921 168.125-5.69 224.238-16.71 39.904-7.854 99.474-12.723 123.51-7.237 22.422 5.116 23.323 19.333-3.69 21.684-25.772 2.227-88.976-1.428-142.327-14.779-1.939-.484-3.515-1.528-2.529-2.73 1.05-1.277 4.093-.257 6.096.22 47.962 11.413 105.743 13.564 125.753 11.69 18.262-1.71 18.028-9.876.81-13.816-33.64-7.688-109.91-1.077-143.515 5.518-72.235 14.194-192.658 18.177-227.142 19.67-15.376.666-31.42 1.341-39.73-.284-8.777-1.715-6.837-7.796 3.697-12.96 17.15-8.412 59.72-11.597 81.332-13.064 77.027-5.23 162.776 1.48 190.548 7.37.94.2 2.233-.772 1.256-1.844-3.59-3.924-25.32-12.39-58.617-13.574Z"></path></svg>
@@ -92,10 +92,6 @@
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <a href="{{ route('login') }}" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-xl hover:-translate-y-1">
                         Mulai Gratis
-                    </a>
-                    <a href="#demo" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Lihat Demo
                     </a>
                 </div>
 
