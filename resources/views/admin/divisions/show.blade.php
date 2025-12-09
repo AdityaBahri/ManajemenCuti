@@ -88,10 +88,18 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         @if($division->head_user_id !== $member->id)
-                                            <form action="{{ route('admin.divisions.removeMember', ['division' => $division->id, 'user' => $member->id]) }}" method="POST" onsubmit="return confirm('Keluarkan {{ $member->name }} dari divisi ini?');">
-                                                @csrf
-                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">Keluarkan</button>
-                                            </form>
+                                            <button type="button" 
+                                                    x-data=""
+                                                    x-on:click="$dispatch('open-confirm-modal', {
+                                                        url: '{{ route('admin.divisions.removeMember', ['division' => $division->id, 'user' => $member->id]) }}',
+                                                        method: 'POST',
+                                                        title: 'Keluarkan Anggota?',
+                                                        message: 'Apakah Anda yakin ingin mengeluarkan {{ $member->name }} dari divisi ini?',
+                                                        type: 'danger'
+                                                    })"
+                                                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors">
+                                                Keluarkan
+                                            </button>
                                         @else
                                             <span class="text-gray-400 dark:text-gray-500 text-xs italic">Ketua (Ganti via Edit)</span>
                                         @endif

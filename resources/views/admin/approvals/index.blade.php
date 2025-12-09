@@ -6,19 +6,30 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    {{-- Wrapper Alpine.js untuk mengelola Modal Penolakan --}}
+    <div class="py-12" x-data="{ 
+        rejectModalOpen: false, 
+        rejectUrl: '', 
+        rejectionNote: '',
+        openRejectModal(url) {
+            this.rejectUrl = url;
+            this.rejectionNote = ''; // Reset catatan
+            this.rejectModalOpen = true;
+            {{-- Fokus ke textarea setelah modal terbuka --}}
+            setTimeout(() => $refs.noteInput.focus(), 100);
+        }
+    }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- Alert Messages --}}
-            @if (session('success'))
-                <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 3000)" class="mb-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    {{ session('success') }}
-                </div>
-            @endif
+            {{-- Validation Errors --}}
             @if ($errors->any())
-                <div class="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-xl shadow-sm">
-                    {{ $errors->first() }}
+                <div class="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-xl shadow-sm flex items-start gap-3">
+                    <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -100,15 +111,25 @@
 
                                         {{-- Actions --}}
                                         <div class="flex flex-row md:flex-col gap-3 min-w-[140px] pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 mt-4 md:mt-0 pl-0 md:pl-6 justify-end">
-                                            <form action="{{ route('approvals.approve', $req) }}" method="POST" class="w-full">
-                                                @csrf
-                                                <button type="submit" class="w-full justify-center inline-flex items-center px-4 py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg font-semibold text-xs uppercase tracking-widest shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" onclick="return confirm('Setujui pengajuan ini? {{ Auth::user()->isHrd() ? '(Kuota user akan dipotong otomatis)' : '' }}')">
-                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                    Setujui
-                                                </button>
-                                            </form>
+                                            
+                                            {{-- Tombol Setujui (Menggunakan Modal Konfirmasi Umum) --}}
+                                            <button type="button"
+                                                    x-on:click="$dispatch('open-confirm-modal', {
+                                                        url: '{{ route('approvals.approve', $req) }}',
+                                                        method: 'POST',
+                                                        title: 'Setujui Pengajuan?',
+                                                        message: 'Apakah Anda yakin ingin menyetujui pengajuan cuti dari {{ $req->user->name }}? {{ Auth::user()->isHrd() ? '(Kuota user akan dipotong otomatis)' : '' }}',
+                                                        type: 'success'
+                                                    })"
+                                                    class="w-full justify-center inline-flex items-center px-4 py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white rounded-lg font-semibold text-xs uppercase tracking-widest shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Setujui
+                                            </button>
 
-                                            <button type="button" onclick="openRejectModal({{ $req->id }})" class="w-full justify-center inline-flex items-center px-4 py-2.5 bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg font-semibold text-xs uppercase tracking-widest shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                                            {{-- Tombol Tolak (Memicu Modal Penolakan Custom) --}}
+                                            <button type="button" 
+                                                    @click="openRejectModal('{{ route('approvals.reject', $req) }}')"
+                                                    class="w-full justify-center inline-flex items-center px-4 py-2.5 bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg font-semibold text-xs uppercase tracking-widest shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                                                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                                 Tolak
                                             </button>
@@ -125,38 +146,68 @@
                 </div>
             </div>
         </div>
+
+        {{-- MODAL PENOLAKAN CUSTOM (Hidden by default) --}}
+        <div x-show="rejectModalOpen" style="display: none;" class="relative z-[60]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <!-- Backdrop -->
+            <div x-show="rejectModalOpen" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
+                 class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" 
+                 @click="rejectModalOpen = false"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    
+                    <!-- Modal Panel -->
+                    <div x-show="rejectModalOpen" 
+                         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                         class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-200 dark:border-gray-700">
+                        
+                        <form method="POST" :action="rejectUrl">
+                            @csrf
+                            <div class="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                                <div class="sm:flex sm:items-start">
+                                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10 text-red-600 dark:text-red-400">
+                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                        </svg>
+                                    </div>
+                                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                        <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Tolak Pengajuan Cuti</h3>
+                                        <div class="mt-2">
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                                Silakan berikan alasan mengapa Anda menolak pengajuan ini. Alasan ini akan terlihat oleh karyawan.
+                                            </p>
+                                            <textarea 
+                                                name="rejection_note" 
+                                                x-model="rejectionNote"
+                                                x-ref="noteInput"
+                                                rows="3" 
+                                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                                placeholder="Contoh: Beban kerja tim sedang tinggi..."
+                                                required></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+                                <button type="submit" 
+                                        class="inline-flex w-full justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto transition-colors">
+                                    Tolak Pengajuan
+                                </button>
+                                <button type="button" 
+                                        @click="rejectModalOpen = false" 
+                                        class="mt-3 inline-flex w-full justify-center rounded-lg bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto transition-colors">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-    {{-- Script Modal Reject --}}
-    <script>
-        function openRejectModal(id) {
-            const reason = prompt("Masukkan alasan penolakan (Wajib):");
-            if (reason !== null) {
-                if (reason.trim().length < 5) {
-                    alert("Alasan penolakan minimal 5 karakter.");
-                    return;
-                }
-                
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/admin/approvals/${id}/reject`; // Pastikan path URL sesuai dengan route yang ada
-                
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                
-                const reasonInput = document.createElement('input');
-                reasonInput.type = 'hidden';
-                reasonInput.name = 'rejection_note';
-                reasonInput.value = reason;
-
-                form.appendChild(csrfInput);
-                form.appendChild(reasonInput);
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-    </script>
 </x-app-layout>

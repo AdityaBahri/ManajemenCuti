@@ -36,8 +36,8 @@ class LeaveApprovalController extends Controller
                     });
                 }
 
-                // KONDISI 2: User adalah HRD (atau Admin)
-                if ($user->isHrd() || $user->isAdmin()) {
+                // KONDISI 2: User adalah HRD
+                if ($user->isHrd()) {
                     $query->orWhere('status', 'approved_by_leader')
                           ->orWhere(function($q) {
                               $q->where('status', 'pending')

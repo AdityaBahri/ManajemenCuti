@@ -27,14 +27,6 @@
                 </a>
             </div>
 
-            {{-- Alert Success --}}
-            @if (session('success'))
-                <div x-data="{ show: true }" x-show="show" x-transition class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    {{ session('success') }}
-                </div>
-            @endif
-
             {{-- Table List --}}
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700">
                 <div class="overflow-x-auto">
@@ -92,13 +84,21 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         @if ($leave->status === 'pending')
-                                            <form action="{{ route('leave-requests.cancel', $leave) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pengajuan ini?');">
-                                                @csrf
-                                                <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold transition-colors flex items-center gap-1 mx-auto">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                    Batal
-                                                </button>
-                                            </form>
+                                            {{-- Tombol Batal dengan Modal Konfirmasi --}}
+                                            <button type="button"
+                                                    x-data=""
+                                                    x-on:click="$dispatch('open-confirm-modal', {
+                                                        url: '{{ route('leave-requests.cancel', $leave) }}',
+                                                        method: 'POST',
+                                                        title: 'Batalkan Pengajuan?',
+                                                        message: 'Apakah Anda yakin ingin membatalkan pengajuan cuti ini? Tindakan ini tidak dapat dibatalkan.',
+                                                        type: 'warning'
+                                                    })"
+                                                    class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold transition-colors flex items-center gap-1 mx-auto"
+                                                    title="Batalkan Pengajuan">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                Batal
+                                            </button>
                                         @else
                                             <span class="text-gray-400 dark:text-gray-600 text-xs italic">Selesai</span>
                                         @endif

@@ -76,10 +76,10 @@ class DatabaseSeeder extends Seeder
 
         // Contoh Karyawan (Role Employee)
         User::firstOrCreate(
-            ['email' => 'jokowi@email.com'],
+            ['email' => 'syechyusuf@email.com'],
             [
-                'username' => 'jokododo',
-                'name' => 'Jokowi',
+                'username' => 'yusuf',
+                'name' => 'Syech Yusuf',
                 'password' => Hash::make('password'),
                 'role' => 'employee',
                 'division_id' => $divisionDev->id, // Assign ke Divisi Dev

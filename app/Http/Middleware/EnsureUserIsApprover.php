@@ -25,7 +25,7 @@ class EnsureUserIsApprover
         }
 
         // IZINKAN: Admin, HRD, dan Ketua Divisi
-        if ($user->isAdmin() || $user->isHrd() || $user->isDivisionHead()) {
+        if ($user->isHrd() || $user->isDivisionHead()) {
             return $next($request);
         }
 

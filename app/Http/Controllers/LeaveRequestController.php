@@ -22,6 +22,10 @@ class LeaveRequestController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
+        if ($user->isAdmin() || $user->isHrd()) {
+           return redirect()->route('dashboard')->with('error', 'Halaman ini hanya untuk karyawan mengajukan cuti.');
+        }
+        
         $leaveRequests = LeaveRequest::where('user_id', $user->id)
             ->with(['type', 'leaderApprover', 'hrdApprover'])
             ->latest()
@@ -37,6 +41,12 @@ class LeaveRequestController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if ($user->isAdmin() || $user->isHrd()) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Role Admin dan HRD tidak dapat mengajukan cuti melalui sistem ini.');
+        }
+
         $leaveTypes = LeaveType::all();
         
         return view('leave_requests.create', compact('leaveTypes', 'user'));
@@ -49,6 +59,10 @@ class LeaveRequestController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if ($user->isAdmin() || $user->isHrd()) {
+             return redirect()->route('dashboard');
+        }
 
         $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
@@ -93,17 +107,28 @@ class LeaveRequestController extends Controller
             return back()->withErrors(['start_date' => 'Anda sudah memiliki pengajuan cuti pada tanggal tersebut.'])->withInput();
         }
 
-        // Cek Kuota Cuti Tahunan
+        // --- VALIDASI KHUSUS CUTI TAHUNAN ---
         if ($leaveType->name === 'Cuti Tahunan') {
+            
+            // 1. Cek Eligibilitas Masa Kerja (Harus > 1 Tahun)
+            // Jika tanggal bergabung lebih besar (lebih baru) dari setahun yang lalu, tolak.
+            if ($user->join_date > now()->subYear()) {
+                $eligibleDate = $user->join_date->addYear()->format('d M Y');
+                return back()->withErrors(['leave_type_id' => "Anda belum berhak mengambil Cuti Tahunan karena masa kerja kurang dari 1 tahun. Anda baru bisa mengajukan mulai tanggal $eligibleDate."])->withInput();
+            }
+
+            // 2. Cek Sisa Kuota
             if ($user->current_annual_leave_quota < $totalDays) {
                 return back()->withErrors(['leave_type_id' => 'Sisa kuota cuti tahunan tidak mencukupi.'])->withInput();
             }
+
+            // 3. Cek Aturan H-3
             if ($startDate->diffInDays(now(), false) > -3) {
-                 return back()->withErrors(['start_date' => 'Pengajuan Cuti Tahunan minimal H-3.'])->withInput();
+                 return back()->withErrors(['start_date' => 'Pengajuan Cuti Tahunan minimal H-3 dari tanggal mulai.'])->withInput();
             }
         }
 
-        // Cek Cuti Sakit
+        // --- VALIDASI KHUSUS CUTI SAKIT ---
         $filePath = null;
         if ($leaveType->name === 'Cuti Sakit') {
             if (!$request->hasFile('medical_certificate')) {

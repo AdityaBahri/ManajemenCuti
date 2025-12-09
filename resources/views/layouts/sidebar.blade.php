@@ -31,7 +31,7 @@
         @endif
 
         {{-- SECTION: APPROVAL (Hanya untuk Leader, HRD, Admin) --}}
-        @if(Auth::user()->isDivisionHead() || Auth::user()->isHrd() || Auth::user()->isAdmin())
+        @if(Auth::user()->isDivisionHead() || Auth::user()->isHrd())
             <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Verifikasi</p>
             
             <a href="{{ route('approvals.index') }}" 
